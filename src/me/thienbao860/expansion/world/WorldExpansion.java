@@ -43,7 +43,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
 
     @Override
     public String getVersion() {
-        return "1.0.0";
+        return "1.0.1";
     }
 
     @Override
@@ -54,18 +54,19 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         if (args[0] == null) return null;
         if (args[0].equalsIgnoreCase("#")) {
             switch (args[1]) {
+                case "total":
+                    return String.valueOf(Bukkit.getWorlds().size());
                 case "biome":
                     return p.getWorld().getBiome(p.getLocation().getBlockX(), p.getLocation().getBlockZ()).name().toLowerCase();
                 case "nearbyEntites":
-                    if (args.length == 3) {
-                        try {
-                            int dis = Integer.parseInt(args[2]);
-                            return String.valueOf(p.getNearbyEntities(dis, dis, dis).size());
-                        } catch (NumberFormatException e) {
-                            return null;
-                        }
+                    if (args.length != 3) break;
+                    try {
+                        int dis = Integer.parseInt(args[2]);
+                        return String.valueOf(p.getNearbyEntities(dis, dis, dis).size());
+                    } catch (NumberFormatException e) {
+                        return null;
                     }
-                    break;
+
             }
             return null;
         }
@@ -87,6 +88,8 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
                     return timeFormat(world.getTime());
                 case "canPvP":
                     return String.valueOf(world.getPVP());
+                case "thunder":
+                    return String.valueOf(world.isThundering());
                 case "animalAllowed":
                     return String.valueOf(world.getAllowAnimals());
                 case "monsterAllowed":
