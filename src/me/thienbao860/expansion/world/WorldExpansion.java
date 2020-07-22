@@ -43,7 +43,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
 
     @Override
     public String getVersion() {
-        return "1.0.1";
+        return "1.0.2";
     }
 
     @Override
@@ -52,6 +52,12 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         String[] args = params.split("_");
         World world;
         if (args[0] == null) return null;
+        
+        // return all worlds
+        if (args[0].equals("worlds")) {
+            return Bukkit.getServer().getWorlds().stream().map(World::getName).collect(Collectors.joining(", "));
+        }
+        
         if (args[0].equalsIgnoreCase("#")) {
             switch (args[1]) {
                 case "total":
