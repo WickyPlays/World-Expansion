@@ -16,7 +16,6 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class WorldExpansion extends PlaceholderExpansion implements Listener, Cacheable {
 
