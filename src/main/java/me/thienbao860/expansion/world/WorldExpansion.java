@@ -1,13 +1,11 @@
 package me.thienbao860.expansion.world;
 
+import com.google.common.primitives.Ints;
 import me.clip.placeholderapi.expansion.Cacheable;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
-import org.bukkit.Bukkit;
-import org.bukkit.Server;
-import org.bukkit.World;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -35,7 +33,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
 
     @Override
     public String getIdentifier() {
-        return "world";
+        return "me/thienbao860/expansion/world";
     }
 
     @Override
@@ -45,99 +43,95 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
 
     @Override
     public String getVersion() {
-        return "1.0.2";
+        return "1.1.0";
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
-    public String onRequest(OfflinePlayer player, String params) {
+    public String onRequest(OfflinePlayer p, String params) {
 
-        final Player p = (Player) player;
-        final World world;
+        final Player player = (Player) p;
 
         final String[] args = params.split("_");
-        if (args[0] == null) return null;
-        
-        // return all worlds
-        if (args[0].equals("worlds")) {
-            return Bukkit.getServer().getWorlds().stream().map(World::getName).collect(Collectors.joining(", "));
-        }
-        
-        if (args[0].equalsIgnoreCase("#")) {
-            switch (args[1]) {
-                case "total":
-                    return String.valueOf(Bukkit.getWorlds().size());
-                case "biome":
-                    return p.getWorld().getBiome(p.getLocation().getBlockX(), p.getLocation().getBlockZ()).name().toLowerCase();
-                case "nearbyEntites":
-                    if (args.length != 3) break;
-                    try {
-                        int dis = Integer.parseInt(args[2]);
-                        return String.valueOf(p.getNearbyEntities(dis, dis, dis).size());
-                    } catch (NumberFormatException e) {
-                        return null;
-                    }
+        if (args.length == 0) return null;
 
-            }
-            return null;
+        // What is this supposed to be for in here??
+//        if (args[0].equals("worlds")) {
+//            return Bukkit.getServer().getWorlds().stream().map(World::getName).collect(Collectors.joining(", "));
+//        }
+
+        //Mutual world
+        switch (args[0]) {
+            case "total":
+                return String.valueOf(Bukkit.getWorlds().size());
+            case "biome":
+                return player.getWorld().getBiome(player.getLocation().getBlockX(), player.getLocation().getBlockZ()).name().toLowerCase();
+            case "nearbyEntites":
+                if (args.length != 2) break;
+                Integer dis = Ints.tryParse(args[1]);
+                if (dis == null) break;
+                return String.valueOf(player.getNearbyEntities(dis, dis, dis).size());
         }
 
-        // Server world related
-        if (args[0].equalsIgnoreCase("$")) {
-            world = p.getWorld();
-        } else {
-            world = Bukkit.getWorld(args[0]);
+        if (args.length < 2) return null;
+        World world = getWorld(player, args);
+
+        if (world == null) return null;
+        switch (args[0]) {
+            case "name":
+                return world.getName();
+            case "seed":
+                return String.valueOf(world.getSeed());
+            case "time":
+                return timeFormat(world.getTime());
+            case "canPvP":
+                return String.valueOf(world.getPVP());
+            case "thunder":
+                return String.valueOf(world.isThundering());
+            case "animalAllowed":
+                return String.valueOf(world.getAllowAnimals());
+            case "monsterAllowed":
+                return String.valueOf(world.getAllowMonsters());
+            case "difficulty":
+                return world.getDifficulty().name().toLowerCase();
+            case "players":
+                if (args.length == 3) {
+                    if (perms != null) {
+                        return String.valueOf(playersInGroup(world, args[1]));
+                    } else return "0";
+                } else return String.valueOf(world.getPlayers().size());
+            case "playerExist":
+                if (args.length == 3) {
+                    return String.valueOf(playerExist(world, args[1]));
+                }
+                break;
+            case "gameruleEnabled":
+                if (args.length == 3) {
+                    return String.valueOf(world.isGameRule(args[1].toUpperCase()));
+                }
+                break;
+            case "recentjoin":
+                if (!worldData.containsKey(world.getName())) return "";
+                return worldData.get(world.getName()).getRecentJoin().getName();
+            case "recentquit":
+                if (!worldData.containsKey(world.getName())) return "";
+                return worldData.get(world.getName()).getRecentQuit().getName();
+            case "totalBalance":
+                if (econ != null) {
+                    return String.valueOf(totalMoney(world));
+                }
+                break;
         }
 
-        if (world != null) {
-            switch (args[1]) {
-                case "name":
-                    return world.getName();
-                case "seed":
-                    return String.valueOf(world.getSeed());
-                case "time":
-                    return timeFormat(world.getTime());
-                case "canPvP":
-                    return String.valueOf(world.getPVP());
-                case "thunder":
-                    return String.valueOf(world.isThundering());
-                case "animalAllowed":
-                    return String.valueOf(world.getAllowAnimals());
-                case "monsterAllowed":
-                    return String.valueOf(world.getAllowMonsters());
-                case "difficulty":
-                    return world.getDifficulty().name().toLowerCase();
-                case "players":
-                    if (args.length == 3) {
-                        if (perms != null) {
-                            return String.valueOf(playersInGroup(world, args[2]));
-                        } else return "0";
-                    } else return String.valueOf(world.getPlayers().size());
-                case "playerExist":
-                    if (args.length > 3) {
-                        return String.valueOf(playerExist(world, args[2]));
-                    }
-                    break;
-                case "gamerule":
-                    if (args[2] != null) {
-                        return String.valueOf(world.isGameRule(args[1].toUpperCase()));
-                    }
-                    break;
 
-                case "recentjoin":
-                    if (!worldData.containsKey(world.getName())) return "";
-                    return worldData.get(world.getName()).getRecentJoin().getName();
-                case "recentquit":
-                    if (!worldData.containsKey(world.getName())) return "";
-                    return worldData.get(world.getName()).getRecentQuit().getName();
-                case "totalBalance":
-                    if (econ != null) {
-                        return String.valueOf(totalMoney(world));
-                    }
-                    break;
-            }
-
-        }
         return null;
+    }
+
+    public World getWorld(Player player, String[] args) {
+        String worldName = args[args.length - 1];
+        if (worldName.equals("$")) {
+            return player.getWorld();
+        } else return Bukkit.getWorld(worldName);
     }
 
     @EventHandler
@@ -163,8 +157,11 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
     @EventHandler
     public void onTeleport(PlayerTeleportEvent event) {
         Player player = event.getPlayer();
-        if (event.getFrom().getWorld().getName().equals(event.getTo().getWorld().getName())) return;
-        String world = event.getTo().getWorld().getName();
+        Location from = event.getFrom();
+        Location to = event.getTo();
+        if (to == null || from.getWorld() == null || to.getWorld() == null) return;
+        if (from.getWorld().getName().equals(to.getWorld().getName())) return;
+        String world = to.getWorld().getName();
         if (!worldData.containsKey(world)) {
             worldData.put(world, new WorldData());
         }
@@ -183,7 +180,9 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
     private void setupPermissions() {
         Server server = Bukkit.getServer();
         RegisteredServiceProvider<Permission> rsp = server.getServicesManager().getRegistration(Permission.class);
-        perms = rsp.getProvider();
+        if (rsp != null) {
+            perms = rsp.getProvider();
+        }
     }
 
     private double totalMoney(World world) {
