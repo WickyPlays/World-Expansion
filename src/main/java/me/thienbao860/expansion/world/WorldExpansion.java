@@ -32,7 +32,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
 
     @Override
     public String getIdentifier() {
-        return "me/thienbao860/expansion/world";
+        return "world";
     }
 
     @Override
@@ -42,7 +42,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
 
     @Override
     public String getVersion() {
-        return "1.1.0";
+        return "1.1.1";
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -81,9 +81,11 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
                 return world.getName();
             case "seed":
                 return String.valueOf(world.getSeed());
+            case "sealevel":
+                return String.valueOf(world.getSeaLevel());
             case "time":
                 return timeFormat(world.getTime());
-            case "canPvP":
+            case "canpvp":
                 return String.valueOf(world.getPVP());
             case "thunder":
                 return String.valueOf(world.isThundering());
@@ -99,12 +101,12 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
                         return String.valueOf(playersInGroup(world, args[1]));
                     } else return "0";
                 } else return String.valueOf(world.getPlayers().size());
-            case "playerExist":
+            case "playerexist":
                 if (args.length == 3) {
                     return String.valueOf(playerExist(world, args[1]));
                 }
                 break;
-            case "gameruleEnabled":
+            case "isgamerule":
                 if (args.length == 3) {
                     return String.valueOf(world.isGameRule(args[1].toUpperCase()));
                 }
@@ -115,14 +117,12 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
             case "recentquit":
                 if (!worldData.containsKey(world.getName())) return "";
                 return worldData.get(world.getName()).getRecentQuit().getName();
-            case "totalBalance":
+            case "totalbalance":
                 if (econ != null) {
                     return String.valueOf(totalMoney(world));
                 }
                 break;
         }
-
-
         return null;
     }
 
