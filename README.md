@@ -4,4 +4,4 @@ This is the source code for the PlaceholderAPI expansion https://api.extendedcli
 
 Note: 
    + For placeholders which has the argument \<world\>, you can name the argument to the specific world, or symbol "$" (without ") as local world
-   + For Vault-related placeholders, especially %world_players\_\<group\>\_\<world\>\% and %world_totalBalance\_\<world>\%, you need to have both Vault & one of economy provider plugin (e.g: EssentialsX) to work
+   + For Vault-related placeholders, especially %world_players\_\<group\>\_\<world\>\% and %world_totalbalance\_\<world>\%, you need to have both Vault & one of economy provider plugin (e.g: EssentialsX) to work
