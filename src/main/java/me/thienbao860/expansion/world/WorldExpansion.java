@@ -18,47 +18,47 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class WorldExpansion extends PlaceholderExpansion implements Listener, Cacheable {
-
+    
     public Map<String, WorldData> worldData;
-
+    
     private Economy econ = null;
     private Permission perms = null;
-
+    
     public WorldExpansion() {
         worldData = new HashMap<>();
         setupEconomy();
         setupPermissions();
     }
-
+    
     @Override
     public String getIdentifier() {
         return "world";
     }
-
+    
     @Override
     public String getAuthor() {
         return "thienbao860";
     }
-
+    
     @Override
     public String getVersion() {
         return "1.1.1";
     }
-
+    
     @SuppressWarnings("UnstableApiUsage")
     @Override
     public String onRequest(OfflinePlayer p, String params) {
-
+        
         final Player player = (Player) p;
-
+        
         final String[] args = params.split("_");
         if (args.length == 0) return null;
-
+        
         // What is this supposed to be for in here??
 //        if (args[0].equals("worlds")) {
 //            return Bukkit.getServer().getWorlds().stream().map(World::getName).collect(Collectors.joining(", "));
 //        }
-
+        
         //Mutual world
         switch (args[0]) {
             case "total":
@@ -71,10 +71,10 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
                 if (dis == null) break;
                 return String.valueOf(player.getNearbyEntities(dis, dis, dis).size());
         }
-
+        
         if (args.length < 2) return null;
         World world = getWorld(player, args);
-
+        
         if (world == null) return null;
         switch (args[0]) {
             case "name":
@@ -85,6 +85,8 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
                 return String.valueOf(world.getSeaLevel());
             case "time":
                 return timeFormat(world.getTime());
+            case "12time":
+                return timeFormat12(world.getTime());
             case "canpvp":
                 return String.valueOf(world.getPVP());
             case "thunder":
@@ -125,14 +127,14 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         }
         return null;
     }
-
+    
     public World getWorld(Player player, String[] args) {
         String worldName = args[args.length - 1];
         if (worldName.equals("$")) {
             return player.getWorld();
         } else return Bukkit.getWorld(worldName);
     }
-
+    
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
@@ -142,7 +144,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         }
         worldData.get(world).setRecentJoin(player);
     }
-
+    
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
@@ -152,7 +154,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         }
         worldData.get(world).setRecentJoin(player);
     }
-
+    
     @EventHandler
     public void onTeleport(PlayerTeleportEvent event) {
         Player player = event.getPlayer();
@@ -165,9 +167,9 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
             worldData.put(world, new WorldData());
         }
         worldData.get(world).setRecentJoin(player);
-
+        
     }
-
+    
     private void setupEconomy() {
         Server server = Bukkit.getServer();
         if (!isVaultExist()) return;
@@ -175,7 +177,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         if (rsp == null) return;
         econ = rsp.getProvider();
     }
-
+    
     private void setupPermissions() {
         Server server = Bukkit.getServer();
         RegisteredServiceProvider<Permission> rsp = server.getServicesManager().getRegistration(Permission.class);
@@ -183,7 +185,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
             perms = rsp.getProvider();
         }
     }
-
+    
     private double totalMoney(World world) {
         double total = 0;
         for (Player player : world.getPlayers()) {
@@ -191,11 +193,11 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         }
         return total;
     }
-
+    
     private boolean isVaultExist() {
         return Bukkit.getServer().getPluginManager().isPluginEnabled("Vault");
     }
-
+    
     private boolean playerExist(World world, String name) {
         for (Player player : world.getPlayers()) {
             if (player.getName().equals(name)) {
@@ -204,7 +206,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         }
         return false;
     }
-
+    
     private int playersInGroup(World world, String group) {
         int i = 0;
         for (Player player : world.getPlayers()) {
@@ -214,10 +216,9 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         }
         return i;
     }
-
+    
     private String timeFormat(long tick) {
-
-        int hour = (int) tick / 1000;
+        int hour = ((int) ((tick / 1000) + 6)) % 24;
         String minutesAsString = String.valueOf(tick);
         int length = minutesAsString.length();
         /*
@@ -229,14 +230,38 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
          */
         String newStr = length < 3 ? minutesAsString.substring(length - 1) : minutesAsString.substring(length - 3);
         int minutes = (Integer.parseInt(newStr) * 60 / 999);
-        String add0 = minutes < 10 ? "0" : "";
-        return hour + ":" + add0 + minutes;
+//        String add0 = minutes < 10 ? "0" : "";
+        return String.format("%02d:%02d", hour, minutes);
+//        return hour + ":" + add0 + minutes;
     }
-
+    
+    private String timeFormat12(long tick) {
+        int hour = ((int) ((tick / 1000) + 6)) % 24;
+        boolean am = hour >= 12;
+        if (hour > 12) {
+            hour -= 12;
+        }
+        String minutesAsString = String.valueOf(tick);
+        int length = minutesAsString.length();
+        /*
+            1 - 0
+            10 - 1
+            100 - 2
+            1000 - 2
+            10000 - 2
+         */
+        String newStr = length < 3 ? minutesAsString.substring(length - 1) : minutesAsString.substring(length - 3);
+        int minutes = (Integer.parseInt(newStr) * 60 / 999);
+//        String add0 = minutes < 10 ? "0" : "";
+        return String.format("%d:%02d %s", hour, minutes, am ? "AM" : "PM");
+//        return hour + ":" + add0 + minutes;
+    }
+    
     @Override
     public void clear() {
         worldData.clear();
         econ = null;
         perms = null;
     }
+    
 }
