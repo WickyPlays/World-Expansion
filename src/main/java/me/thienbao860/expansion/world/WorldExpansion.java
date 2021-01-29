@@ -237,7 +237,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
     
     private String timeFormat12(long tick) {
         int hour = ((int) ((tick / 1000) + 6)) % 24;
-        boolean am = hour >= 12;
+        boolean am = hour < 12;
         if (hour > 12) {
             hour -= 12;
         }
