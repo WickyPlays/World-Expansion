@@ -3,10 +3,11 @@ plugins {
 }
 
 group 'me.thienbao860'
-version '1.1.1'
+version '1.1.2'
 
 repositories {
     mavenCentral()
+
     maven {
         url = 'http://repo.extendedclip.com/content/repositories/placeholderapi'
     }
@@ -20,6 +21,6 @@ repositories {
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:+'
-    compileOnly 'me.clip:PlaceholderAPI:2.10.7'
+    compileOnly 'me.clip:placeholderapi:2.10.9'
     compileOnly "com.github.MilkBowl:VaultAPI:1.7"
 }
