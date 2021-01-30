@@ -1,6 +1,5 @@
 package me.thienbao860.expansion.world;
 
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 public class WorldData {
