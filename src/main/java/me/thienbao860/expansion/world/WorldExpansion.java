@@ -19,7 +19,7 @@ import java.util.Map;
 
 public class WorldExpansion extends PlaceholderExpansion implements Listener, Cacheable {
     
-    public Map<String, WorldData> worldData;
+    private final Map<String, WorldData> worldData;
     
     private Economy econ = null;
     private Permission perms = null;
@@ -42,7 +42,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
     
     @Override
     public String getVersion() {
-        return "1.1.2";
+        return "1.2.0";
     }
     
     @SuppressWarnings("UnstableApiUsage")
@@ -97,7 +97,6 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
                 return String.valueOf(world.getAllowMonsters());
             case "difficulty":
                 return world.getDifficulty().name().toLowerCase();
-
             case "players":
                 if (args.length >= 3) {
                     if (perms != null) {
@@ -138,7 +137,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
     }
     
     public World getWorld(Player player, String[] args) {
-        String worldName = args[args.length - 1];
+        final String worldName = args[args.length - 1];
         if (worldName.equals("$")) {
             return player.getWorld();
         }
@@ -147,8 +146,8 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
     
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        String world = player.getWorld().getName();
+        final Player player = event.getPlayer();
+        final String world = player.getWorld().getName();
 
         worldData.putIfAbsent(world, new WorldData());
         worldData.get(world).setRecentJoin(player);
@@ -166,7 +165,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
     @EventHandler
     public void onTeleport(PlayerTeleportEvent event) {
 
-        Player player = event.getPlayer();
+        final Player player = event.getPlayer();
         Location from = event.getFrom();
         Location to = event.getTo();
 
@@ -248,14 +247,6 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         }
         return i;
     }
-
-    /*
-            1 - 0
-            10 - 1
-            100 - 2
-            1000 - 2
-            10000 - 2
-    */
 
     private String timeFormat24(long tick) {
         return timeFormat(tick, false);
