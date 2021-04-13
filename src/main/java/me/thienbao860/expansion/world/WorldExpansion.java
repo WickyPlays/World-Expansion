@@ -15,6 +15,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class WorldExpansion extends PlaceholderExpansion implements Listener, Cacheable {
@@ -26,8 +27,10 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
     
     public WorldExpansion() {
         this.worldData = new HashMap<>();
-        setupEconomy();
-        setupPermissions();
+        if (isVaultExist()) {
+            setupEconomy();
+            setupPermissions();
+        }
     }
     
     @Override
@@ -42,7 +45,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
     
     @Override
     public String getVersion() {
-        return "1.2.0";
+        return "1.2.1";
     }
     
     @SuppressWarnings("UnstableApiUsage")
@@ -56,12 +59,13 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         
         //===== Mutual world =====
 
-        switch (args[0]) {
+        switch (args[0].toLowerCase()) {
             case "total":
                 return String.valueOf(Bukkit.getWorlds().size());
             case "biome":
-                return player.getWorld().getBiome(player.getLocation().getBlockX(), player.getLocation().getBlockZ()).name().toLowerCase();
-            case "nearbyEntites":
+                Location loc = player.getLocation();
+                return player.getWorld().getBiome(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()).name().toLowerCase();
+            case "nearbyentites":
                 if (args.length != 2) break;
                 Integer dis = Ints.tryParse(args[1]);
                 if (dis == null) return "0";
@@ -84,16 +88,16 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
 
             case "time":
                 return timeFormat24(world.getTime());
-            case "timeIn12":
+            case "timein12":
                 return timeFormat(world.getTime(), true);
 
             case "canpvp":
                 return String.valueOf(world.getPVP());
             case "thunder":
                 return String.valueOf(world.isThundering());
-            case "animalAllowed":
+            case "animalallowed":
                 return String.valueOf(world.getAllowAnimals());
-            case "monsterAllowed":
+            case "monsterallowed":
                 return String.valueOf(world.getAllowMonsters());
             case "difficulty":
                 return world.getDifficulty().name().toLowerCase();
@@ -128,7 +132,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
                 return worldData.get(world.getName()).getRecentQuit().getName();
             case "totalbalance":
                 if (econ != null) {
-                    return String.valueOf(totalMoney(world));
+                    return String.valueOf(getTotalMoney(world));
                 }
                 break;
 
@@ -199,7 +203,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         this.perms = rsp.getProvider();
     }
     
-    private double totalMoney(World world) {
+    private double getTotalMoney(final World world) {
         double total = 0;
 
         if (econ == null) {
@@ -216,7 +220,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         return Bukkit.getServer().getPluginManager().isPluginEnabled("Vault");
     }
     
-    private boolean playerExist(World world, String name) {
+    private boolean playerExist(final World world, String name) {
         for (Player player : world.getPlayers()) {
             if (player.getName().equals(name)) {
                 return true;
@@ -225,7 +229,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         return false;
     }
     
-    private int playersInGroup(World world, String group) {
+    private int playersInGroup(final World world, String group) {
         int i = 0;
         if (perms == null) {
             return 0;
@@ -238,7 +242,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         return i;
     }
 
-    private int playersPermission(World world, String perm) {
+    private int playersPermission(final World world, String perm) {
         int i = 0;
         for (Player player : world.getPlayers()) {
             if (player.isOp() || player.hasPermission(perm)) {
