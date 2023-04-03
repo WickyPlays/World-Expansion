@@ -68,7 +68,6 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
             if (matcher.group(2) != null)
                 arrayList.add(matcher.group(2));
         }
-        player.sendMessage(String.valueOf(arrayList));
 
         if (arrayList.size() == 0) return null;
         if (arrayList.size() == 1) {
