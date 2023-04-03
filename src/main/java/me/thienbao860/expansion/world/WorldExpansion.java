@@ -14,17 +14,17 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class WorldExpansion extends PlaceholderExpansion implements Listener, Cacheable {
-    
+
     private final Map<String, WorldData> worldData;
-    
+
     private Economy econ = null;
     private Permission perms = null;
-    
+
     public WorldExpansion() {
         this.worldData = new HashMap<>();
         if (isVaultExist()) {
@@ -32,31 +32,57 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
             setupPermissions();
         }
     }
-    
+
     @Override
     public String getIdentifier() {
         return "world";
     }
-    
+
     @Override
     public String getAuthor() {
         return "thienbao860";
     }
-    
+
     @Override
     public String getVersion() {
-        return "1.2.1";
+        return "1.2.2";
     }
-    
+
     @SuppressWarnings("UnstableApiUsage")
     @Override
     public String onRequest(OfflinePlayer p, String params) {
-        
+
         final Player player = (Player) p;
-        
-        final String[] args = params.split("_");
-        if (args.length == 0) return null;
-        
+        String[] args;
+        ArrayList<String> arrayList = new ArrayList<>();
+
+        // Define a regular expression pattern to match the strings
+        Pattern pattern = Pattern.compile("(\\b\\w+\\b)|(\\b\\w+\\b)(\\B_+?\\B)(?<=\\*)\\w+(?=\\*(?:_|$))");
+// Create a Matcher object
+        Matcher matcher = pattern.matcher(params);
+// Check if the pattern matches the input string
+
+        while (matcher.find()) {
+            if (matcher.group(1) != null)
+                arrayList.add(matcher.group(1));
+            if (matcher.group(2) != null)
+                arrayList.add(matcher.group(2));
+        }
+        player.sendMessage(String.valueOf(arrayList));
+
+        if (arrayList.size() == 0) return null;
+        if (arrayList.size() == 1) {
+            args = params.split("_");
+        } else {
+            //This will separate first input wich can be only identifier in bottom switch(){}
+            //That parts are then put together with world name
+            String[] parts = arrayList.get(0).split("_");
+            // add each part to the ArrayList
+            ArrayList<String> list = new ArrayList<>(Arrays.asList(parts));
+            list.add(arrayList.get(1));
+            args = list.toArray(new String[0]);
+        }
+        arrayList.clear();
         //===== Mutual world =====
 
         switch (args[0].toLowerCase()) {
@@ -75,7 +101,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         //===== Specific world =====
         if (args.length < 2) return null;
         World world = getWorld(player, args);
-        
+
         if (world == null) return "";
 
         switch (args[0]) {
@@ -139,7 +165,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         }
         return null;
     }
-    
+
     public World getWorld(Player player, String[] args) {
         final String worldName = args[args.length - 1];
         if (worldName.equals("$")) {
@@ -147,7 +173,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         }
         return Bukkit.getWorld(worldName);
     }
-    
+
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         final Player player = event.getPlayer();
@@ -156,7 +182,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         worldData.putIfAbsent(world, new WorldData());
         worldData.get(world).setRecentJoin(player);
     }
-    
+
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
@@ -165,7 +191,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         worldData.putIfAbsent(world, new WorldData());
         worldData.get(world).setRecentJoin(player);
     }
-    
+
     @EventHandler
     public void onTeleport(PlayerTeleportEvent event) {
 
@@ -184,9 +210,9 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         worldData.putIfAbsent(world, new WorldData());
 
         worldData.get(world).setRecentJoin(player);
-        
+
     }
-    
+
     private void setupEconomy() {
         Server server = Bukkit.getServer();
         if (!isVaultExist()) return;
@@ -194,7 +220,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         if (rsp == null) return;
         this.econ = rsp.getProvider();
     }
-    
+
     private void setupPermissions() {
         Server server = Bukkit.getServer();
         RegisteredServiceProvider<Permission> rsp = server.getServicesManager().getRegistration(Permission.class);
@@ -202,7 +228,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
 
         this.perms = rsp.getProvider();
     }
-    
+
     private double getTotalMoney(final World world) {
         double total = 0;
 
@@ -215,11 +241,11 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         }
         return total;
     }
-    
+
     private boolean isVaultExist() {
         return Bukkit.getServer().getPluginManager().isPluginEnabled("Vault");
     }
-    
+
     private boolean playerExist(final World world, String name) {
         for (Player player : world.getPlayers()) {
             if (player.getName().equals(name)) {
@@ -228,7 +254,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         }
         return false;
     }
-    
+
     private int playersInGroup(final World world, String group) {
         int i = 0;
         if (perms == null) {
@@ -244,6 +270,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
 
     private int playersPermission(final World world, String perm) {
         int i = 0;
+        perm.replace("_", "");
         for (Player player : world.getPlayers()) {
             if (player.isOp() || player.hasPermission(perm)) {
                 i++;
@@ -255,7 +282,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
     private String timeFormat24(long tick) {
         return timeFormat(tick, false);
     }
-    
+
     private String timeFormat(long tick, boolean is12) {
         int hour = ((int) ((tick / 1000) + 6)) % 24;
         boolean am = hour < 12;
@@ -276,12 +303,12 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         return String.format("%d:%02d", hour, minutes);
 
     }
-    
+
     @Override
     public void clear() {
         this.worldData.clear();
         this.econ = null;
         this.perms = null;
     }
-    
+
 }
