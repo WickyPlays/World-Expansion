@@ -151,9 +151,11 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
                 break;
             case "recentjoin":
                 if (!worldData.containsKey(world.getName())) return "";
+                if (player == null) return "";
                 return worldData.get(world.getName()).getRecentJoin().getName();
             case "recentquit":
                 if (!worldData.containsKey(world.getName())) return "";
+                if (player == null) return "";
                 return worldData.get(world.getName()).getRecentQuit().getName();
             case "totalbalance":
                 if (econ != null) {
