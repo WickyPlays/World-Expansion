@@ -190,7 +190,7 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
         String world = player.getWorld().getName();
 
         worldData.putIfAbsent(world, new WorldData());
-        worldData.get(world).setRecentJoin(player);
+        worldData.get(world).setRecentQuit(player);
     }
 
     @EventHandler
