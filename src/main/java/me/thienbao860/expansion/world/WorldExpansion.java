@@ -162,6 +162,11 @@ public class WorldExpansion extends PlaceholderExpansion implements Listener, Ca
                     return String.valueOf(getTotalMoney(world));
                 }
                 break;
+            case "gamerulevalue":
+                if (args.length >= 3) {
+                    return String.valueOf(world.getGameRuleValue(GameRule.getByName(args[1])));
+                }
+                break;
 
         }
         return null;
